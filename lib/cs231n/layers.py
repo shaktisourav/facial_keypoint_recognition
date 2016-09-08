@@ -25,8 +25,8 @@ def affine_forward(x, w, b):
   # will need to reshape the input into rows.                                 #
   #############################################################################
   N = x.shape[0]
-  x_col = x.reshape((N,-1))
-  out = np.dot(x_col,w) + b
+  x_col = x.reshape((N , -1))
+  out = np.dot(x_col , w) + b
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -659,4 +659,26 @@ def softmax_loss(x, y):
   dx = probs.copy()
   dx[np.arange(N), y] -= 1
   dx /= N
+  return loss, dx
+
+def l2_loss(x, y):
+  """
+  Computes the L2 loss and its gradient.
+
+  Inputs:
+  - x: Input data, of shape (N, C) where x[i, j] is the score for the jth class
+    for the ith input.
+  - y: Vector of target values, of same shape as X where y[i, j] is the true value for x[i, j]
+
+  Returns a tuple of:
+  - loss: Scalar giving the loss
+  - dx: Gradient of the loss with respect to x
+  """
+  
+  N = x.shape[0]
+  loss = np.sum((x - y) ** 2) / N
+
+  dx = 2 * (x - y)
+  dx /= N
+
   return loss, dx
