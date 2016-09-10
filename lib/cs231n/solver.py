@@ -71,7 +71,7 @@ class Solver(object):
       names to gradients of the loss with respect to those parameters.
   """
 
-  def __init__(self, model, data, **kwargs):
+  def __init__(self, model, data, solver_type="regression", **kwargs):
     """
     Construct a new Solver instance.
     
@@ -82,6 +82,7 @@ class Solver(object):
       'X_val': Array of shape (N_val, d_1, ..., d_k) giving validation images
       'y_train': Array of shape (N_train,) giving labels for training images
       'y_val': Array of shape (N_val,) giving labels for validation images
+    - solver_type: "regression" or "classification". This is used to calculate accuracy.
       
     Optional arguments:
     - update_rule: A string giving the name of an update rule in optim.py.
@@ -105,6 +106,10 @@ class Solver(object):
     self.y_train = data['y_train']
     self.X_val = data['X_val']
     self.y_val = data['y_val']
+
+    self.solver_type = solver_type
+    if not (solver_type == "regression" or solver_type == "classification"):
+      raise ValueError('Unrecognized solver type: %s' % solver_type)
     
     # Unpack keyword arguments
     self.update_rule = kwargs.pop('update_rule', 'sgd')
@@ -115,6 +120,8 @@ class Solver(object):
 
     self.print_every = kwargs.pop('print_every', 10)
     self.verbose = kwargs.pop('verbose', True)
+
+
 
     # Throw an error if there are extra keyword arguments
     if len(kwargs) > 0:
@@ -208,9 +215,19 @@ class Solver(object):
       start = i * batch_size
       end = (i + 1) * batch_size
       scores = self.model.loss(X[start:end])
-      y_pred.append(np.argmax(scores, axis=1))
+
+      if self.solver_type == "classification":
+        y_pred.append(np.argmax(scores, axis=1))
+      elif self.solver_type == "regression":
+        y_pred.append(scores)
+      else:
+        raise ValueError('Unrecognized solver type: %s' % solver_type)
+
     y_pred = np.hstack(y_pred)
-    acc = np.mean(y_pred == y)
+    if self.solver_type == "classification":
+      acc = np.mean(y_pred - y)
+    elif self.solver_type == "regression":
+      acc = np.mean((y_pred - y) ** 2, axis = 0)
 
     return acc
 
@@ -252,11 +269,11 @@ class Solver(object):
 
         if self.verbose:
           print '(Epoch %d / %d) train acc: %f; val_acc: %f' % (
-                 self.epoch, self.num_epochs, train_acc, val_acc)
+                 self.epoch, self.num_epochs, np.mean(train_acc), np.mean(val_acc))
 
         # Keep track of the best model
-        if val_acc > self.best_val_acc:
-          self.best_val_acc = val_acc
+        if np.mean(val_acc) > self.best_val_acc:
+          self.best_val_acc = np.mean(val_acc)
           self.best_params = {}
           for k, v in self.model.params.iteritems():
             self.best_params[k] = v.copy()
