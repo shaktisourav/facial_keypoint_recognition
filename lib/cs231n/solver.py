@@ -223,7 +223,10 @@ class Solver(object):
       else:
         raise ValueError('Unrecognized solver type: %s' % solver_type)
 
-    y_pred = np.hstack(y_pred)
+    
+    y_pred = np.vstack(y_pred)
+    
+
     if self.solver_type == "classification":
       acc = np.mean(y_pred - y)
     elif self.solver_type == "regression":
