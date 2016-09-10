@@ -6,7 +6,9 @@ except ImportError:
   print 'run the following from the cs231n directory and try again:'
   print 'python setup.py build_ext --inplace'
   print 'You may also need to restart your iPython kernel'
-
+  print 'Installing on Windows? See'
+  print 'https://github.com/cython/cython/wiki/InstallingOnWindows'
+  print 'https://github.com/cython/cython/wiki/CythonExtensionsOnWindows'
 from cs231n.im2col import *
 
 
