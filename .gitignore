@@ -4,3 +4,4 @@ data/*.csv
 data/*.zip
 .ipynb_checkpoints
 *.pyc
+*.hd5
