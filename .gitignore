@@ -6,3 +6,4 @@ data/*.zip
 *.pyc
 *.hd5
 *.prototxt
+*.caffemodel
